@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DriversModule } from './drivers/drivers.module';
@@ -11,9 +11,17 @@ import { DriversModule } from './drivers/drivers.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    MongooseModule.forRoot(
-      process.env.MONGODB_URI || 'mongodb://localhost:27017/conductores',
-    ),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        const uri = configService.get<string>('MONGODB_URI');
+        console.log('🔗 Conectando a MongoDB:', uri ? '✅ URI configurada' : '❌ URI no encontrada');
+        return {
+          uri: uri || 'mongodb://localhost:27017/conductores',
+        };
+      },
+      inject: [ConfigService],
+    }),
     DriversModule,
   ],
   controllers: [AppController],

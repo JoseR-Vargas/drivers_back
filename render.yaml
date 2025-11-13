@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: conductores-api
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: MONGODB_URI
+        sync: false

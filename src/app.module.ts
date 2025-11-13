@@ -6,14 +6,17 @@ import { AppService } from './app.service';
 import { DriversModule } from './drivers/drivers.module';
 
 @Module({
-	imports: [
-		ConfigModule.forRoot({
-			isGlobal: true,
-		}),
-		MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/conductores'),
-		DriversModule
-	],
-	controllers: [AppController],
-	providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    MongooseModule.forRoot(
+      process.env.MONGODB_URI || 'mongodb://localhost:27017/conductores',
+    ),
+    DriversModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

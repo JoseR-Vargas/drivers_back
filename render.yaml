@@ -2,8 +2,15 @@ services:
   - type: web
     name: conductores-api
     env: node
-    buildCommand: npm install && npm run build
+    region: oregon
+    plan: free
+    buildCommand: npm ci && npm run build
     startCommand: npm run start:prod
+    healthCheckPath: /
     envVars:
       - key: MONGODB_URI
         sync: false
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000

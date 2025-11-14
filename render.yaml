@@ -8,9 +8,11 @@ services:
     startCommand: npm run start:prod
     healthCheckPath: /
     envVars:
-      - key: MONGODB_URI
+      - key: MONGO_URI
         sync: false
       - key: NODE_ENV
         value: production
+      - key: FRONTEND_URL
+        sync: false
       - key: PORT
         value: 10000

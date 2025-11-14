@@ -12,25 +12,35 @@ async function bootstrap() {
 		'http://localhost:5500',
 		'http://127.0.0.1:5500',
 		'https://driversform.netlify.app',
-		// Agregar tu dominio de Render cuando lo tengas
+		'https://drivers-back-479x.onrender.com',
 		process.env.FRONTEND_URL
 	].filter(Boolean);
 
+	console.log('🔒 CORS - Orígenes permitidos:', allowedOrigins);
+	console.log('🌍 Entorno:', process.env.NODE_ENV);
+
 	app.enableCors({
 		origin: function (origin, callback) {
+			console.log('🌐 Request desde origen:', origin);
+			
 			// Permitir requests sin origin (como Postman, mobile apps)
-			if (!origin) return callback(null, true);
+			if (!origin) {
+				console.log('✅ Sin origen - Permitido');
+				return callback(null, true);
+			}
 			
 			// Verificar si el origen está en la lista permitida
 			if (allowedOrigins.indexOf(origin) !== -1) {
+				console.log('✅ Origen permitido:', origin);
 				callback(null, true);
-			} else if (process.env.NODE_ENV === 'development') {
+			} else if (process.env.NODE_ENV !== 'production') {
 				// En desarrollo, permitir todos los orígenes
+				console.log('✅ Modo desarrollo - Origen permitido:', origin);
 				callback(null, true);
 			} else {
 				// En producción, rechazar orígenes no permitidos
-				console.warn(`CORS blocked origin: ${origin}`);
-				callback(null, false);
+				console.warn('❌ CORS blocked origin:', origin);
+				callback(new Error('Not allowed by CORS'), false);
 			}
 		},
 		methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',

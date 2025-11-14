@@ -29,6 +29,10 @@ export class Driver extends Document {
 
 	@Prop({ type: String, default: null })
 	observaciones?: string;
+
+	// Timestamps automáticos de Mongoose
+	createdAt?: Date;
+	updatedAt?: Date;
 }
 
 export const DriverSchema = SchemaFactory.createForClass(Driver);

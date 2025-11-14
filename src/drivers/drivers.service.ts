@@ -21,18 +21,48 @@ export class DriversService {
 	}
 
 	async findByDate(fecha: string): Promise<Driver[]> {
-		const fechaInicio = new Date(fecha);
-		fechaInicio.setHours(0, 0, 0, 0);
+		// Parsear la fecha en formato YYYY-MM-DD
+		const [año, mes, dia] = fecha.split('-').map(Number);
+		
+		// Crear fechas en UTC pero ajustadas para cubrir todo el día en Argentina (UTC-3)
+		// Si son las 23:51 en Argentina del 13/11, en UTC es 02:51 del 14/11
+		// Por eso necesitamos ampliar el rango
+		const fechaInicio = new Date(Date.UTC(año, mes - 1, dia, 0, 0, 0, 0));
+		fechaInicio.setUTCHours(fechaInicio.getUTCHours() - 6); // Ampliar 6 horas antes
+		
+		const fechaFin = new Date(Date.UTC(año, mes - 1, dia, 23, 59, 59, 999));
+		fechaFin.setUTCHours(fechaFin.getUTCHours() + 6); // Ampliar 6 horas después
 
-		const fechaFin = new Date(fecha);
-		fechaFin.setHours(23, 59, 59, 999);
+		console.log('Filtro de fecha (Argentina UTC-3):', {
+			fechaOriginal: fecha,
+			fechaInicio: fechaInicio.toISOString(),
+			fechaFin: fechaFin.toISOString()
+		});
 
-		return this.driverModel.find({
+		const resultados = await this.driverModel.find({
 			createdAt: {
 				$gte: fechaInicio,
 				$lte: fechaFin
 			}
 		}).sort({ createdAt: -1 }).exec();
+
+		// Filtrar en la aplicación para ser más precisos con la fecha local de Argentina
+		const resultadosFiltrados = resultados.filter(doc => {
+			if (!doc.createdAt) return false;
+			
+			const fechaDoc = new Date(doc.createdAt);
+			// Convertir a fecha local de Argentina (UTC-3)
+			const fechaLocal = new Date(fechaDoc.getTime() - (3 * 60 * 60 * 1000));
+			const diaLocal = fechaLocal.getUTCDate();
+			const mesLocal = fechaLocal.getUTCMonth() + 1;
+			const añoLocal = fechaLocal.getUTCFullYear();
+			
+			return diaLocal === dia && mesLocal === mes && añoLocal === año;
+		});
+
+		console.log(`Encontrados: ${resultados.length} en DB, ${resultadosFiltrados.length} después de filtrar por zona horaria`);
+
+		return resultadosFiltrados;
 	}
 
 	async findOne(id: string): Promise<Driver | null> {
